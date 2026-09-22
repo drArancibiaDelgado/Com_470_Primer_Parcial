@@ -250,4 +250,229 @@ class ReservationServiceTest {
         // No debe convertir ni guardar la reserva
         verifyNoInteractions(conversionService, repository);
     }
+
+    @Test
+    @DisplayName("Rechaza actualizar una reserva que no existe")
+    void updateReservaInexistente() {
+        // Preparar el ID y la solicitud de actualización
+        Long id = 99L;
+        ReservationDTO solicitud = new ReservationDTO();
+
+        // Simular que el repositorio no encuentra la reserva
+        when(repository.getReservationById(id)).thenReturn(Optional.empty());
+
+        // Comprobar que el servicio lanza una excepción
+        assertThrows(ErrException.class, () -> service.update(id, solicitud));
+
+        // Debe buscar la reserva, pero no actualizarla
+        verify(repository).getReservationById(id);
+        verify(repository, never()).update(anyLong(), any(Reservation.class));
+
+        // Tampoco debe convertir datos ni consultar ciudades
+        verifyNoInteractions(conversionService, catalogConnector);
+    }
+
+    @Test
+    @DisplayName("Actualiza una reserva existente con ciudades reconocidas")
+    void updateReservaCorrecta() {
+        Long id = 1L;
+
+        // 1. Simular que la reserva existe
+        Reservation existente = new Reservation();
+        ReservationDTO existenteDTO = new ReservationDTO();
+        existenteDTO.setId(id);
+
+        when(repository.getReservationById(id)).thenReturn(Optional.of(existente));
+
+        when(conversionService.convert(existente, ReservationDTO.class)).thenReturn(existenteDTO);
+
+        // 2. Preparar los nuevos datos
+        SegmentDTO segmento = new SegmentDTO();
+        segmento.setOrigin("EZE");
+        segmento.setDestination("MIA");
+
+        ItineraryDTO itinerario = new ItineraryDTO();
+        itinerario.setSegment(List.of(segmento));
+
+        ReservationDTO solicitud = new ReservationDTO();
+        solicitud.setItinerary(itinerario);
+
+        // 3. Simular que ambas ciudades existen
+        CityDTO origen = new CityDTO();
+        origen.setName("Buenos Aires");
+
+        CityDTO destino = new CityDTO();
+        destino.setName("Miami");
+
+        when(catalogConnector.getCity("EZE")).thenReturn(origen);
+        when(catalogConnector.getCity("MIA")).thenReturn(destino);
+
+        // 4. Preparar la conversión y la actualización
+        Reservation nuevosDatos = new Reservation();
+        Reservation actualizada = new Reservation();
+
+        ReservationDTO esperado = new ReservationDTO();
+        esperado.setId(id);
+        esperado.setItinerary(itinerario);
+
+        when(conversionService.convert(solicitud, Reservation.class)).thenReturn(nuevosDatos);
+
+        when(repository.update(id, nuevosDatos)).thenReturn(actualizada);
+
+        when(conversionService.convert(actualizada, ReservationDTO.class)).thenReturn(esperado);
+
+        // 5. Ejecutar el servicio real
+        ReservationDTO resultado = service.update(id, solicitud);
+
+        // 6. Comprobar el resultado y las llamadas
+        assertSame(esperado, resultado);
+        assertEquals(id, resultado.getId());
+
+        verify(repository).getReservationById(id);
+        verify(catalogConnector).getCity("EZE");
+        verify(catalogConnector).getCity("MIA");
+        verify(conversionService).convert(solicitud, Reservation.class);
+        verify(repository).update(id, nuevosDatos);
+        verify(conversionService).convert(same(existente), eq(ReservationDTO.class));
+
+        verify(conversionService).convert(same(actualizada), eq(ReservationDTO.class));
+    }
+
+    @Test
+    @DisplayName("Rechaza actualizar cuando el origen no existe")
+    void updateConOrigenInexistente() {
+        Long id = 1L;
+
+        // 1. Simular que la reserva existe
+        Reservation existente = new Reservation();
+        ReservationDTO existenteDTO = new ReservationDTO();
+        existenteDTO.setId(id);
+
+        when(repository.getReservationById(id)).thenReturn(Optional.of(existente));
+
+        when(conversionService.convert(existente, ReservationDTO.class)).thenReturn(existenteDTO);
+
+        // 2. Preparar el nuevo itinerario
+        SegmentDTO segmento = new SegmentDTO();
+        segmento.setOrigin("XXX");
+        segmento.setDestination("MIA");
+
+        ItineraryDTO itinerario = new ItineraryDTO();
+        itinerario.setSegment(List.of(segmento));
+
+        ReservationDTO solicitud = new ReservationDTO();
+        solicitud.setItinerary(itinerario);
+
+        // 3. El origen no existe, pero el destino sí
+        CityDTO destino = new CityDTO();
+        destino.setName("Miami");
+
+        when(catalogConnector.getCity("XXX")).thenReturn(null);
+        when(catalogConnector.getCity("MIA")).thenReturn(destino);
+
+        // 4. Comprobar que se rechaza la actualización
+        assertThrows(ErrException.class, () -> service.update(id, solicitud));
+
+        // 5. Debe consultar, pero no actualizar
+        verify(repository).getReservationById(id);
+        verify(catalogConnector).getCity("XXX");
+        verify(catalogConnector).getCity("MIA");
+
+        verify(repository, never()).update(anyLong(), any(Reservation.class));
+
+        // No debe convertir la nueva solicitud al modelo
+        verify(conversionService, never()).convert(solicitud, Reservation.class);
+    }
+
+    @Test
+    @DisplayName("Rechaza actualizar cuando el destino no existe")
+    void updateConDestinoInexistente() {
+        Long id = 1L;
+
+        // 1. Simular que la reserva existe
+        Reservation existente = new Reservation();
+        ReservationDTO existenteDTO = new ReservationDTO();
+        existenteDTO.setId(id);
+
+        when(repository.getReservationById(id)).thenReturn(Optional.of(existente));
+
+        when(conversionService.convert(existente, ReservationDTO.class)).thenReturn(existenteDTO);
+
+        // 2. Preparar el nuevo itinerario
+        SegmentDTO segmento = new SegmentDTO();
+        segmento.setOrigin("EZE");
+        segmento.setDestination("XXX");
+
+        ItineraryDTO itinerario = new ItineraryDTO();
+        itinerario.setSegment(List.of(segmento));
+
+        ReservationDTO solicitud = new ReservationDTO();
+        solicitud.setItinerary(itinerario);
+
+        // 3. El origen existe, pero el destino no
+        CityDTO origen = new CityDTO();
+        origen.setName("Buenos Aires");
+
+        when(catalogConnector.getCity("EZE")).thenReturn(origen);
+        when(catalogConnector.getCity("XXX")).thenReturn(null);
+
+        // 4. Comprobar que se rechaza la actualización
+        assertThrows(ErrException.class, () -> service.update(id, solicitud));
+
+        // 5. Debe consultar, pero no actualizar
+        verify(repository).getReservationById(id);
+        verify(catalogConnector).getCity("EZE");
+        verify(catalogConnector).getCity("XXX");
+
+        verify(repository, never()).update(anyLong(), any(Reservation.class));
+
+        // No debe convertir la nueva solicitud al modelo
+        verify(conversionService, never()).convert(solicitud, Reservation.class);
+    }
+
+    // ------
+    @Test
+    @DisplayName("Elimina una reserva existente")
+    void deleteReservaExistente() {
+        Long id = 1L;
+
+        // 1. Simular que la reserva existe
+        Reservation existente = new Reservation();
+        ReservationDTO existenteDTO = new ReservationDTO();
+        existenteDTO.setId(id);
+
+        when(repository.getReservationById(id)).thenReturn(Optional.of(existente));
+
+        when(conversionService.convert(existente, ReservationDTO.class)).thenReturn(existenteDTO);
+
+        // 2. Ejecutar y comprobar que no lanza una excepción
+        assertDoesNotThrow(() -> service.delete(id));
+
+        // 3. Comprobar que busca y solicita eliminar el ID correcto
+        verify(repository).getReservationById(id);
+        verify(repository).delete(id);
+
+        // Eliminar no requiere consultar ciudades
+        verifyNoInteractions(catalogConnector);
+    }
+
+    @Test
+    @DisplayName("Rechaza eliminar una reserva que no existe")
+    void deleteReservaInexistente() {
+        Long id = 99L;
+
+        // 1. Simular que la reserva no existe
+        when(repository.getReservationById(id)).thenReturn(Optional.empty());
+
+        // 2. Comprobar que el servicio lanza una excepción
+        assertThrows(ErrException.class, () -> service.delete(id));
+
+        // 3. Debe buscar, pero nunca eliminar
+        verify(repository).getReservationById(id);
+        verify(repository, never()).delete(anyLong());
+
+        // No debe convertir datos ni consultar ciudades
+        verifyNoInteractions(conversionService, catalogConnector);
+    }
+
 }
