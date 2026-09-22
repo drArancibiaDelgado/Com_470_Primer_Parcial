@@ -25,12 +25,15 @@ class ParamReservationRepositoryTest {
     @BeforeEach
     void setUp() {
         repository = new ReservationRepository();
-        System.out.println("antes de cada prueba");
+
+        // Cada ejecución empieza con la lista vacía
+        ReservationRepository.reservations.clear();
     }
 
     @AfterEach
     void tearDown() {
-        System.out.println("despues de cada prueba");
+        // Limpiar lo que guardó esta ejecución
+        ReservationRepository.reservations.clear();
     }
 
     @DisplayName("Guardar una nueva reservacion correctamente op ValueSource")
@@ -47,6 +50,8 @@ class ParamReservationRepositoryTest {
         assertAll(() -> assertNotNull(result),
                 () -> assertEquals(origin, result.getItinerary().getSegment().get(0).getOrigin()),
                 () -> assertEquals("AEP", result.getItinerary().getSegment().get(0).getDestination()));
+        // Debe haber una sola reserva almacenada
+        assertEquals(1, repository.getReservations().size());
     }
 
     @DisplayName("Guardar una nueva reservacion correctamente op 2 ")
@@ -63,6 +68,8 @@ class ParamReservationRepositoryTest {
         assertAll(() -> assertNotNull(result),
                 () -> assertEquals(origin, result.getItinerary().getSegment().get(0).getOrigin()),
                 () -> assertEquals(destination, result.getItinerary().getSegment().get(0).getDestination()));
+        // La primera reserva debe recibir el ID 1
+        assertEquals(Long.valueOf(1L), result.getId());
     }
 
     @DisplayName("Guardar una nueva reservacion correctamente op 3 file ")
@@ -79,6 +86,9 @@ class ParamReservationRepositoryTest {
         assertAll(() -> assertNotNull(result),
                 () -> assertEquals(origin, result.getItinerary().getSegment().get(0).getOrigin()),
                 () -> assertEquals(destination, result.getItinerary().getSegment().get(0).getDestination()));
+
+        // Lo devuelto debe ser el objeto que quedó almacenado
+        assertSame(result, repository.getReservations().get(0));
     }
 
     private Reservation getReservation(Long id, String origin, String destination) {
