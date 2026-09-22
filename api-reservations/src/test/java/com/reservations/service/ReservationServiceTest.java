@@ -1,105 +1,74 @@
 package com.reservations.service;
 
 import com.reservations.connector.CatalogConnector;
-import com.reservations.dto.ReservationDTO; // Importación agregada
+import com.reservations.dto.ReservationDTO;
+import com.reservations.exception.ErrException;
 import com.reservations.model.Reservation;
 import com.reservations.repository.ReservationRepository;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.convert.ConversionService;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class ReservationServiceTest {
 
     @Mock
-    ReservationRepository repository;
+    private ReservationRepository repository;
 
     @Mock
-    ConversionService conversionService;
+    private ConversionService conversionService;
 
     @Mock
-    CatalogConnector catalogConnector;
+    private CatalogConnector catalogConnector;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
+    @InjectMocks
+    private ReservationService service;
 
-    @AfterEach
-    void tearDown() {
-    }
-
-    @DisplayName("Test getReservations method")
     @Test
-    void getReservations() {
-        // Por implementar
-    }
+    @DisplayName("Devuelve la reserva cuando el ID existe")
+    void getReservationByIdExistente() {
+        // 1. Preparar los datos y las respuestas simuladas
+        Long id = 1L;
+        Reservation modelo = new Reservation();
+        ReservationDTO esperado = new ReservationDTO();
 
-    @DisplayName("Test getReservationById method")
-    @Test
-    void getReservationById() {
-        // Given
-        ReservationService service = new ReservationService(repository, conversionService, catalogConnector);
+        when(repository.getReservationById(id)).thenReturn(Optional.of(modelo));
 
-        Reservation reservationModel = getReservation(1L, "EZE", "MIA");
-        when(repository.getReservationById(1L)).thenReturn(Optional.of(reservationModel));
+        when(conversionService.convert(modelo, ReservationDTO.class)).thenReturn(esperado);
 
-        ReservationDTO reservationDTO = getReservationDTO();
-        when(conversionService.convert(reservationModel, ReservationDTO.class)).thenReturn(reservationDTO);
+        // 2. Ejecutar el método real del servicio
+        ReservationDTO resultado = service.getReservationById(id);
 
-        // When (Cambiado a 1L para que coincida con el mock)
-        ReservationDTO result = service.getReservationById(1L);
+        // 3. Comprobar el resultado y las llamadas realizadas
+        assertSame(esperado, resultado);
 
-        // Then
-        assertAll(
-                () -> assertNotNull(result, "El resultado no debe ser nulo")
-                // Si tu DTO tiene un método getId(), descomenta la siguiente línea:
-                // () -> assertEquals(1L, result.getId())
-        );
-    }
-
-    @DisplayName("Test getNotReservationById method")
-    @Test
-    void getNotReservationById() {
-        // Given
-        ReservationService service = new ReservationService(repository, conversionService, catalogConnector);
-        when(repository.getReservationById(6L)).thenReturn(Optional.empty());
-
-        // Aquí debes agregar el Assert para verificar que lance una excepción o retorne null
+        verify(repository).getReservationById(id);
+        verify(conversionService).convert(modelo, ReservationDTO.class);
+        verifyNoInteractions(catalogConnector);
     }
 
     @Test
-    void save() {
-    }
+    @DisplayName("Lanza una excepción cuando el ID no existe")
+    void getReservationByIdInexistente() {
+        // 1. Simular que el repositorio no encuentra la reserva
+        Long id = 6L;
 
-    @Test
-    void update() {
-    }
+        when(repository.getReservationById(id)).thenReturn(Optional.empty());
 
-    @Test
-    void delete() {
-    }
+        // 2. Ejecutar y comprobar la excepción esperada
+        assertThrows(ErrException.class, () -> service.getReservationById(id));
 
-    // --- MÉTODOS AUXILIARES FALTANTES ---
-
-    private Reservation getReservation(Long id, String origin, String destination) {
-        Reservation reservation = new Reservation();
-        // Configura los atributos de tu entidad real. Por ejemplo:
-        // reservation.setId(id);
-        return reservation;
-    }
-
-    private ReservationDTO getReservationDTO() {
-        ReservationDTO dto = new ReservationDTO();
-        // dto.setId(1L);
-        return dto;
+        // 3. Comprobar que no se intenta convertir una reserva inexistente
+        verify(repository).getReservationById(id);
+        verifyNoInteractions(conversionService, catalogConnector);
     }
 }
