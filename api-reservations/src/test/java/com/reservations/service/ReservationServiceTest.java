@@ -474,5 +474,55 @@ class ReservationServiceTest {
         // No debe convertir datos ni consultar ciudades
         verifyNoInteractions(conversionService, catalogConnector);
     }
+    // antes de esto 90% covertura
+
+    @Test
+    @DisplayName("Rechaza actualizar cuando la conversion devuelve null")
+    void updateConConversionNula() {
+        Long id = 1L;
+
+        Reservation existente = new Reservation();
+        ReservationDTO solicitud = new ReservationDTO();
+
+        // La reserva existe
+        when(repository.getReservationById(id)).thenReturn(Optional.of(existente));
+
+        // Pero no se obtiene su DTO
+        when(conversionService.convert(existente, ReservationDTO.class)).thenReturn(null);
+
+        // El servicio debe rechazar la actualizacion
+        assertThrows(ErrException.class, () -> service.update(id, solicitud));
+
+        verify(repository).getReservationById(id);
+        verify(conversionService).convert(existente, ReservationDTO.class);
+
+        verify(repository, never()).update(anyLong(), any(Reservation.class));
+
+        verify(conversionService, never()).convert(solicitud, Reservation.class);
+
+        verifyNoInteractions(catalogConnector);
+    }
+
+    @Test
+    @DisplayName("Rechaza eliminar cuando la conversion devuelve null")
+    void deleteConConversionNula() {
+        Long id = 1L;
+
+        Reservation existente = new Reservation();
+
+        // La reserva existe
+        when(repository.getReservationById(id)).thenReturn(Optional.of(existente));
+
+        // Pero no se obtiene su DTO
+        when(conversionService.convert(existente, ReservationDTO.class)).thenReturn(null);
+
+        // El servicio debe rechazar la eliminacion
+        assertThrows(ErrException.class, () -> service.delete(id));
+
+        verify(repository).getReservationById(id);
+        verify(conversionService).convert(existente, ReservationDTO.class);
+        verify(repository, never()).delete(anyLong());
+        verifyNoInteractions(catalogConnector);
+    }
 
 }
