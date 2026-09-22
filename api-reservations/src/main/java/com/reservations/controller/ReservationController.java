@@ -65,6 +65,4 @@ public class ReservationController implements ReservationResource {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-
-
 }

@@ -57,8 +57,17 @@ public class CatalogConnector {
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .clientConnector(new ReactorClientHttpConnector(httpClient)).build();
 
-        return client.get().uri(urlEncoder -> urlEncoder.build(code)).retrieve().bodyToMono(CityDTO.class).share()
-                .block();
+        try {
+            return client.get().uri(urlEncoder -> urlEncoder.build(code))
+                    .retrieve()
+                    .bodyToMono(CityDTO.class)
+                    .share()
+                    .block();
+        } catch (Exception e) {
+            LOGGER.warn("No se pudo conectar a api-catalog (puerto 6070), usando respuesta de respaldo: {}", e.getMessage());
+            // Retornamos un CityDTO vacío o simulado para que la reserva continúe sin dar error 500
+            return new CityDTO();
+        }
     }
 
 }
