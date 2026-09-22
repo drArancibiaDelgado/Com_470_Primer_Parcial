@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.reservations.repository.ParamReservationRepositoryTest" time="0.232" tests="9" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.reservations.service.ReservationServiceTest" time="0.473" tests="16" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="21"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -69,13 +69,20 @@
     <property name="maven.repo.local" value="C:\Users\Animetx\.m2\repository"/>
     <property name="java.class.version" value="65.0"/>
   </properties>
-  <testcase name="save_should_return_the_information_param(String)[1]" classname="com.reservations.repository.ParamReservationRepositoryTest" time="0.055"/>
-  <testcase name="save_should_return_the_information_param(String)[2]" classname="com.reservations.repository.ParamReservationRepositoryTest" time="0.002"/>
-  <testcase name="save_should_return_the_information_param(String)[3]" classname="com.reservations.repository.ParamReservationRepositoryTest" time="0.002"/>
-  <testcase name="save_should_return_the_information_paramCSV(String, String)[1]" classname="com.reservations.repository.ParamReservationRepositoryTest" time="0.002"/>
-  <testcase name="save_should_return_the_information_paramCSV(String, String)[2]" classname="com.reservations.repository.ParamReservationRepositoryTest" time="0.002"/>
-  <testcase name="save_should_return_the_information_paramCSV(String, String)[3]" classname="com.reservations.repository.ParamReservationRepositoryTest" time="0.002"/>
-  <testcase name="save_should_return_the_information_paramCSVFile(String, String)[1]" classname="com.reservations.repository.ParamReservationRepositoryTest" time="0.004"/>
-  <testcase name="save_should_return_the_information_paramCSVFile(String, String)[2]" classname="com.reservations.repository.ParamReservationRepositoryTest" time="0.002"/>
-  <testcase name="save_should_return_the_information_paramCSVFile(String, String)[3]" classname="com.reservations.repository.ParamReservationRepositoryTest" time="0.002"/>
+  <testcase name="updateReservaCorrecta" classname="com.reservations.service.ReservationServiceTest" time="0.392"/>
+  <testcase name="updateConDestinoInexistente" classname="com.reservations.service.ReservationServiceTest" time="0.009"/>
+  <testcase name="deleteReservaInexistente" classname="com.reservations.service.ReservationServiceTest" time="0.006"/>
+  <testcase name="getReservationsSinResultados" classname="com.reservations.service.ReservationServiceTest" time="0.004"/>
+  <testcase name="updateConConversionNula" classname="com.reservations.service.ReservationServiceTest" time="0.005"/>
+  <testcase name="getReservationByIdExistente" classname="com.reservations.service.ReservationServiceTest" time="0.003"/>
+  <testcase name="saveConDestinoInexistente" classname="com.reservations.service.ReservationServiceTest" time="0.004"/>
+  <testcase name="getReservationsConResultados" classname="com.reservations.service.ReservationServiceTest" time="0.004"/>
+  <testcase name="updateConOrigenInexistente" classname="com.reservations.service.ReservationServiceTest" time="0.005"/>
+  <testcase name="deleteConConversionNula" classname="com.reservations.service.ReservationServiceTest" time="0.004"/>
+  <testcase name="getReservationByIdInexistente" classname="com.reservations.service.ReservationServiceTest" time="0.004"/>
+  <testcase name="saveReservaCorrecta" classname="com.reservations.service.ReservationServiceTest" time="0.004"/>
+  <testcase name="saveConOrigenInexistente" classname="com.reservations.service.ReservationServiceTest" time="0.004"/>
+  <testcase name="updateReservaInexistente" classname="com.reservations.service.ReservationServiceTest" time="0.003"/>
+  <testcase name="deleteReservaExistente" classname="com.reservations.service.ReservationServiceTest" time="0.006"/>
+  <testcase name="saveConIdDebeLanzarExcepcion" classname="com.reservations.service.ReservationServiceTest" time="0.003"/>
 </testsuite>

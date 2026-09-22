@@ -1,7 +1,6 @@
 package com.reservations.repository;
 
 import com.reservations.model.*;
-import com.reservations.model.*;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -14,7 +13,6 @@ public class ReservationRepository {
     static List<Reservation> reservations = new ArrayList<>();
 
     static {
-
         Passenger passenger = new Passenger();
         passenger.setFirstName("Juan");
         passenger.setLastName("Bergman");
@@ -54,31 +52,35 @@ public class ReservationRepository {
     }
 
     public Optional<Reservation> getReservationById(Long id) {
-        List<Reservation> result = reservations.stream().filter(reservation -> Objects.equals(reservation.getId(), id))
-                .toList();
-
-        Reservation reservation = !result.isEmpty() ? result.get(0) : null;
-        return Optional.ofNullable(reservation);
+        return reservations.stream()
+                .filter(reservation -> Objects.equals(reservation.getId(), id))
+                .findFirst();
     }
 
     public Reservation save(Reservation reservation) {
-        reservation.setId((long) (reservations.size() + 1));
+        // Asigna un ID automático seguro basado en el tamaño actual + 1
+        long nextId = reservations.isEmpty() ? 1L : reservations.stream()
+                .mapToLong(r -> r.getId() != null ? r.getId() : 0L)
+                .max().orElse(0L) + 1;
+
+        reservation.setId(nextId);
         reservations.add(reservation);
         return reservation;
     }
 
     public Reservation update(Long id, Reservation reservation) {
-        List<Reservation> result = reservations.stream().filter(reser -> reser.getId().equals(id)).toList();
-        result.get(0).setId(reservation.getId());
-        result.get(0).setItinerary(reservation.getItinerary());
-        result.get(0).setPassengers(reservation.getPassengers());
-
-        return result.get(0);
+        Optional<Reservation> existingOpt = getReservationById(id);
+        if (existingOpt.isPresent()) {
+            Reservation existing = existingOpt.get();
+            existing.setItinerary(reservation.getItinerary());
+            existing.setPassengers(reservation.getPassengers());
+            return existing;
+        }
+        return null;
     }
 
     public void delete(Long id) {
-        List<Reservation> result = reservations.stream().filter(reservation -> reservation.getId().equals(id)).toList();
-
-        reservations.remove(result.get(0));
+        // Usa removeIf con Objects.equals para evitar NullPointerException de forma segura
+        reservations.removeIf(reservation -> Objects.equals(reservation.getId(), id));
     }
 }
