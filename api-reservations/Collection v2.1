@@ -1,0 +1,89 @@
+{
+  "info": {
+    "_postman_id": "1a514918-6d3d-4236-aa7d-4f3982517691",
+    "name": "Examen COM470 - Reservations",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54610023"
+  },
+  "item": [
+    {
+      "name": "Obtener todas las reservas",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/reservation",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "reservation"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Crear una reserva",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201 Created\", function () {\r",
+              "    pm.response.to.have.status(201);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"passengers\": [\r\n    {\r\n      \"firstName\": \"Diego\",\r\n      \"lastName\": \"Arancibia\",\r\n      \"documentNumber\": \"87654321\",\r\n      \"documentType\": \"CI\",\r\n      \"birthday\": \"1998-05-15\"\r\n    }\r\n  ],\r\n  \"itinerary\": {\r\n    \"segment\": [\r\n      {\r\n        \"origin\": \"LPB\",\r\n        \"destination\": \"VVI\",\r\n        \"departure\": \"2026-10-15\",\r\n        \"arrival\": \"2026-10-16\",\r\n        \"carrier\": \"BOA\" \r\n      }\r\n    ]\r\n  }\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/reservation",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "reservation"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
