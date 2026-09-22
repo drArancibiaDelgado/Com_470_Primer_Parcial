@@ -64,4 +64,7 @@ public class ReservationController implements ReservationResource {
         service.delete(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+
+
 }
